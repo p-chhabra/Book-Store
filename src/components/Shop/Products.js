@@ -1,16 +1,39 @@
 import ProductItem from './ProductItem';
 import classes from './Products.module.css';
+import { useEffect, useState } from 'react';
 
 const Products = (props) => {
 
-  const DUMMY_PRODUCTS = [{
-    title: 'My Book', price: 25, id: 'b1', description: 'First book I ever wrote'
-  },{
-    title: 'Houdini', price: 15,id:'b2', description: 'The famous Magician Houdini'
-  }]
+  const [books, setBooks] = useState([]);
 
-  const productItems = DUMMY_PRODUCTS.map((product)=>{
-    return <li><ProductItem title={product.title} price={product.price} description={product.description} id={product.id}></ProductItem></li>
+  useEffect(()=>{
+    const fetchBookList = async()=>{
+      const response = await fetch('https://react-http-1ca3c-default-rtdb.asia-southeast1.firebasedatabase.app/BookList.json');
+      if(!response.ok){
+        throw new Error("Something went wrong!");
+      }
+      const data = await response.json();
+
+      const bookList = [];
+
+      for(const key in data){
+        bookList.push({
+          title: data[key].title,
+          id: data[key].id,
+          description: data[key].description,
+          price: data[key].price
+        })
+      }
+      setBooks(bookList);
+    }
+
+    fetchBookList().catch((error)=>{
+      console.log(error.message);
+    })
+  },[books])
+
+  const productItems = books.map((product)=>{
+    return <li><ProductItem key={product.id} title={product.title} price={product.price} description={product.description} id={product.id}></ProductItem></li>
   })
 
   return (
